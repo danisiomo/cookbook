@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Семейная кулинарная книга{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- AOS (анимации) -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #4ecdc4;
+            --dark-color: #2c3e50;
+            --light-color: #f7f9fc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            padding-top: 76px; /* для фиксированной навигации */
+        }
+
+        /* Навигация */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), #ff8e8e) !important;
+            box-shadow: 0 2px 20px rgba(255,107,107,0.3);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        .navbar-brand i {
+            margin-right: 8px;
+            font-size: 1.8rem;
+        }
+
+        .nav-link {
+            color: white !important;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: all 0.3s;
+            border-radius: 20px;
+            padding: 8px 20px !important;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-link i {
+            margin-right: 5px;
+        }
+
+        /* Карточки рецептов */
+        .recipe-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            height: 100%;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(255,107,107,0.2);
+        }
+
+        .recipe-card-img {
+            height: 220px;
+            object-fit: cover;
+            width: 100%;
+            transition: transform 0.5s;
+        }
+
+        .recipe-card:hover .recipe-card-img {
+            transform: scale(1.05);
+        }
+
+        .recipe-card-body {
+            padding: 1.5rem;
+        }
+
+        .recipe-card-title {
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+
+        .recipe-card-meta {
+            display: flex;
+            gap: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .recipe-card-meta i {
+            color: var(--primary-color);
+            margin-right: 4px;
+        }
+
+        .category-badge {
+            background: linear-gradient(135deg, var(--primary-color), #ff8e8e);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* Кнопки */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #ff8e8e);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,107,107,0.4);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, var(--primary-color), #ff8e8e);
+            border-color: transparent;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Поиск */
+        .search-box {
+            background: white;
+            border-radius: 50px;
+            padding: 5px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .search-box input {
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .search-box button {
+            border-radius: 50px;
+            padding: 15px 30px;
+            white-space: nowrap;
+        }
+
+        /* Алфавитный указатель */
+        .alphabet-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .alphabet-link {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 50%;
+            color: var(--dark-color);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .alphabet-link:hover,
+        .alphabet-link.active {
+            background: linear-gradient(135deg, var(--primary-color), #ff8e8e);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, var(--dark-color), #1a2634);
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 66px;
+            }
+
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+
+            .search-box {
+                flex-direction: column;
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .search-box input,
+            .search-box button {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .alphabet-link {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Анимации */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Автодополнение */
+        .autocomplete-items {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px;
+            margin-top: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .autocomplete-items div {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .autocomplete-items div:hover {
+            background: var(--light-color);
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #fff3cd, #ffe69b);
+            padding: 2px 5px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="bi bi-book-half"></i>
+                Семейная кулинарная книга
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">
+                            <i class="bi bi-house-door"></i> Главная
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'recipe_list' %}">
+                            <i class="bi bi-book"></i> Все рецепты
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'category_list' %}">
+                            <i class="bi bi-grid"></i> Категории
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'recipe_create' %}">
+                                <i class="bi bi-plus-circle"></i> Новый рецепт
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if user.is_staff %}
+                                    <li><a class="dropdown-item" href="/admin/">
+                                        <i class="bi bi-gear"></i> Админка
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="bi bi-box-arrow-right"></i> Выйти
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="bi bi-box-arrow-in-right"></i> Войти
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="bi bi-person-plus"></i> Регистрация
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Сообщения -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {% if message.tags == 'success' %}
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {% elif message.tags == 'info' %}
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                    {% endif %}
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Основной контент -->
+    <main class="container py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5><i class="bi bi-book-half me-2"></i>Семейная кулинарная книга</h5>
+                    <p class="text-white-50">Сохраняйте и делитесь любимыми рецептами с близкими</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Быстрые ссылки</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'home' %}" class="text-white-50">Главная</a></li>
+                        <li><a href="{% url 'recipe_list' %}" class="text-white-50">Все рецепты</a></li>
+                        <li><a href="{% url 'category_list' %}" class="text-white-50">Категории</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Статистика</h5>
+                    <p class="text-white-50 mb-1">
+                        <i class="bi bi-journal me-2"></i>Всего рецептов: {{ total_recipes|default:0 }}
+                    </p>
+                    <p class="text-white-50 mb-1">
+                        <i class="bi bi-people me-2"></i>Пользователей: {{ total_users|default:0 }}
+                    </p>
+                </div>
+            </div>
+            <hr class="text-white-50">
+            <div class="text-center text-white-50">
+                <small>© 2024 Семейная кулинарная книга. Все права защищены.</small>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Инициализация AOS -->
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    </script>
+    <!-- Пользовательский JS -->
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

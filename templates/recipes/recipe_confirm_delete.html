@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Удаление рецепта{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 2rem auto; text-align: center;">
+    <div class="card">
+        <h1 style="color: #dc3545; margin-bottom: 1rem;">⚠️ Удаление рецепта</h1>
+
+        <p style="margin-bottom: 1.5rem; font-size: 1.1rem;">
+            Вы уверены, что хотите удалить рецепт<br>
+            <strong>"{{ recipe.title }}"</strong>?
+        </p>
+
+        <p style="color: #666; margin-bottom: 2rem;">
+            Это действие нельзя отменить.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button type="submit" class="btn" style="background-color: #dc3545;">
+                    Да, удалить
+                </button>
+                <a href="{% url 'recipe_detail' recipe.pk %}" class="btn" style="background-color: #6c757d;">
+                    Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

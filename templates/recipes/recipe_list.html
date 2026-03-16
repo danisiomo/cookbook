@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load recipe_extras %}
+
+{% block title %}Все рецепты{% endblock %}
+
+{% block content %}
+<!-- Заголовок -->
+<div class="text-center mb-5" data-aos="fade-up">
+    <h1 class="display-5 fw-bold" style="color: var(--primary-color);">
+        <i class="bi bi-book me-3"></i>Все рецепты
+    </h1>
+</div>
+
+<!-- Поиск -->
+<div class="row justify-content-center mb-5" data-aos="fade-up">
+    <div class="col-md-8">
+        <form method="get" class="search-box d-flex">
+            <input type="text"
+                   name="q"
+                   value="{{ query|default:'' }}"
+                   placeholder="Поиск по названию или ингредиентам... (Ctrl + /)"
+                   class="form-control border-0 shadow-none">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-2"></i>Найти
+            </button>
+        </form>
+        {% if query or current_category %}
+            <div class="text-center mt-3">
+                <a href="{% url 'recipe_list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-circle me-2"></i>Сбросить фильтры
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+<!-- Временный блок для отладки, можно удалить потом -->
+{% if query %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        Поиск: "{{ query }}" |
+        Найдено: {{ page_obj.paginator.count }} рецептов
+        {% if page_obj.paginator.count == 0 %}
+            <br>
+            <small>Проверьте, что в базе есть рецепты с такими словами</small>
+        {% endif %}
+    </div>
+{% endif %}
+<!-- Алфавитный указатель -->
+<div class="alphabet-nav" data-aos="fade-up">
+    {% for letter in 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'|make_list %}
+        <a href="{% url 'recipes_by_letter' letter %}"
+           class="alphabet-link {% if current_letter == letter %}active{% endif %}">
+            {{ letter }}
+        </a>
+    {% endfor %}
+</div>
+
+<!-- Категории -->
+<div class="mb-5" data-aos="fade-up">
+    <h5 class="mb-3">Категории:</h5>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'recipe_list' %}{% if query %}?q={{ query }}{% endif %}"
+           class="btn {% if not current_category %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+            Все
+        </a>
+        {% for category in categories %}
+            <a href="?{% if query %}q={{ query }}&{% endif %}category={{ category.slug }}"
+               class="btn {% if current_category == category.slug %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                {{ category.name }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Результаты поиска -->
+<div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
+    <h5 class="mb-0">
+        <i class="bi bi-search me-2"></i>
+        Найдено рецептов: {{ page_obj.paginator.count }}
+    </h5>
+    {% if query %}
+        <span class="badge bg-primary p-2">Поиск: "{{ query }}"</span>
+    {% endif %}
+</div>
+
+<!-- Сетка рецептов -->
+<div class="row g-4">
+    {% for recipe in page_obj %}
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+            <div class="recipe-card" onclick="window.location='{% url 'recipe_detail' recipe.pk %}'">
+                {% if recipe.images.all %}
+                    {% with main_image=recipe.images.filter.is_main.first %}
+                        {% if main_image %}
+                            <img src="{{ main_image.image.url }}" class="recipe-card-img" alt="{{ recipe.title }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/400x300?text={{ recipe.title }}" class="recipe-card-img" alt="{{ recipe.title }}">
+                        {% endif %}
+                    {% endwith %}
+                {% else %}
+                    <img src="https://via.placeholder.com/400x300?text={{ recipe.title }}" class="recipe-card-img" alt="{{ recipe.title }}">
+                {% endif %}
+
+                <div class="recipe-card-body">
+                    {% if recipe.category %}
+                        <span class="category-badge">{{ recipe.category.name }}</span>
+                    {% endif %}
+
+                    <h3 class="recipe-card-title">
+                        {% if query %}
+                            {{ recipe.title|highlight:query|safe }}
+                        {% else %}
+                            {{ recipe.title }}
+                        {% endif %}
+                    </h3>
+
+                    <div class="recipe-card-meta">
+                        <span><i class="bi bi-clock"></i> {{ recipe.cooking_time }} мин</span>
+                        <span><i class="bi bi-people"></i> {{ recipe.servings }} порц.</span>
+                        <span><i class="bi bi-person"></i> {{ recipe.author.username }}</span>
+                    </div>
+
+                    <p class="text-muted small mb-3">
+                        {% if query %}
+                            {{ recipe.description|highlight:query|truncatewords_html:15|safe }}
+                        {% else %}
+                            {{ recipe.description|truncatewords:15 }}
+                        {% endif %}
+                    </p>
+
+                    <span class="btn btn-outline-primary btn-sm">
+                        Смотреть рецепт <i class="bi bi-arrow-right"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-emoji-frown display-1 text-muted"></i>
+            <h3 class="mt-3">Рецепты не найдены</h3>
+            <p class="text-muted">
+                {% if query %}
+                    По запросу "{{ query }}" ничего не найдено.
+                {% else %}
+                    Пока нет рецептов в этой категории.
+                {% endif %}
+            </p>
+            <a href="{% url 'recipe_list' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-arrow-left me-2"></i>Вернуться ко всем рецептам
+            </a>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Пагинация -->
+{% if page_obj.has_other_pages %}
+    <nav class="mt-5" data-aos="fade-up">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

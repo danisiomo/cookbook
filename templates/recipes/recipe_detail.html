@@ -1,0 +1,591 @@
+{% extends 'base.html' %}
+{% load recipe_extras %}
+
+{% block title %}{{ recipe.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recipe-header {
+        background: linear-gradient(135deg, #fff5f5, #ffffff);
+        border-radius: 30px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(255,107,107,0.1);
+    }
+
+    .recipe-gallery {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .main-image-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        cursor: pointer;
+    }
+
+    .main-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+
+    .main-image:hover {
+        transform: scale(1.02);
+    }
+
+    .main-image-container button {
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: 10;
+    }
+
+    .main-image-container:hover button {
+        opacity: 1;
+    }
+
+    .thumbnail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        height: fit-content;
+    }
+
+    .thumbnail {
+        width: 100%;
+        height: 195px;
+        object-fit: cover;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        opacity: 0.7;
+        border: 3px solid transparent;
+    }
+
+    .thumbnail:hover {
+        opacity: 1;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(255,107,107,0.3);
+    }
+
+    .thumbnail.active {
+        opacity: 1;
+        border-color: var(--primary-color);
+    }
+
+    .more-thumbnail {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--primary-color), #ff8e8e);
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+        opacity: 1;
+    }
+
+    .more-thumbnail:hover {
+        background: linear-gradient(135deg, #ff8e8e, var(--primary-color));
+    }
+
+    .recipe-info-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--light-color);
+        border-radius: 15px;
+        margin-bottom: 1rem;
+    }
+
+    .info-item i {
+        font-size: 2rem;
+        color: var(--primary-color);
+    }
+
+    .ingredients-list, .instructions-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .ingredients-list li, .instructions-list li {
+        padding: 0.75rem 1rem;
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        gap: 1rem;
+    }
+
+    .ingredients-list li::before {
+        content: "•";
+        color: var(--primary-color);
+        font-weight: bold;
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .instructions-list {
+        counter-reset: step-counter;
+    }
+
+    .instructions-list li {
+        counter-increment: step-counter;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .instructions-list li::before {
+        content: counter(step-counter);
+        background: var(--primary-color);
+        color: white;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .action-buttons .btn {
+        flex: 1;
+    }
+
+    /* Стили для модального окна галереи */
+    #galleryModal .modal-content {
+        background: rgba(0,0,0,0.95);
+    }
+
+    #galleryModal .btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        opacity: 0.7;
+        transition: opacity 0.3s;
+    }
+
+    #galleryModal .btn:hover {
+        opacity: 1;
+    }
+
+    #galleryModal .btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
+    #galleryImage {
+        max-height: 90vh;
+        max-width: 90vw;
+        object-fit: contain;
+    }
+
+    @media (max-width: 768px) {
+        .recipe-gallery {
+            grid-template-columns: 1fr;
+        }
+
+        .main-image {
+            height: 300px;
+        }
+
+        .thumbnail-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .thumbnail {
+            height: 80px;
+        }
+
+        #galleryModal .btn {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Хлебные крошки -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'recipe_list' %}">Рецепты</a></li>
+        {% if recipe.category %}
+            <li class="breadcrumb-item">
+                <a href="{% url 'recipe_list' %}?category={{ recipe.category.slug }}">
+                    {{ recipe.category.name }}
+                </a>
+            </li>
+        {% endif %}
+        <li class="breadcrumb-item active">{{ recipe.title }}</li>
+    </ol>
+</nav>
+
+<!-- Заголовок и действия -->
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h1 class="display-5 fw-bold" style="color: var(--dark-color);">{{ recipe.title }}</h1>
+        <div class="d-flex gap-3 text-muted">
+            <span><i class="bi bi-person"></i> {{ recipe.author.username }}</span>
+            <span><i class="bi bi-calendar"></i> {{ recipe.created_at|date:"d.m.Y" }}</span>
+        </div>
+    </div>
+
+    {% if user == recipe.author or user.is_staff %}
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-gear"></i> Действия
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'recipe_edit' recipe.pk %}">
+                    <i class="bi bi-pencil text-primary me-2"></i>Редактировать
+                </a></li>
+                <li><a class="dropdown-item text-danger" href="{% url 'recipe_delete' recipe.pk %}">
+                    <i class="bi bi-trash text-danger me-2"></i>Удалить
+                </a></li>
+            </ul>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Галерея -->
+{% if recipe.images.all %}
+    {% with images=recipe.images.all %}
+        <div class="recipe-gallery" data-aos="fade-up">
+            <!-- Главное изображение -->
+            <div class="main-image-container">
+                <img src="{{ images.0.image.url }}" class="main-image" id="mainImage"
+                     alt="{{ recipe.title }}" onclick="openGallery(0)">
+                <button class="btn btn-light position-absolute bottom-0 end-0 m-3"
+                        onclick="openGallery(0)" title="Открыть галерею">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                </button>
+            </div>
+
+            <!-- Миниатюры -->
+            {% if images|length > 1 %}
+                <div class="thumbnail-grid">
+                    {% for image in images|slice:"1:5" %}
+                        <img src="{{ image.image.url }}" class="thumbnail"
+                             data-index="{{ forloop.counter }}"
+                             alt="{{ recipe.title }}"
+                             onclick="changeMainImage(this.src, {{ forloop.counter }})">
+                    {% endfor %}
+
+                    {% if images|length > 5 %}
+                        <div class="thumbnail more-thumbnail" onclick="openGallery(0)">
+                            <span>+{{ images|length|add:"-4" }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% endwith %}
+{% endif %}
+
+<div class="row g-4 mt-2">
+    <!-- Информация о рецепте -->
+    <div class="col-lg-4" data-aos="fade-right">
+        <div class="recipe-info-card">
+            <h4 class="mb-4"><i class="bi bi-info-circle me-2" style="color: var(--primary-color);"></i>Информация</h4>
+
+            <div class="info-item">
+                <i class="bi bi-clock"></i>
+                <div>
+                    <small class="text-muted d-block">Время приготовления</small>
+                    <strong>{{ recipe.cooking_time }} минут</strong>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <i class="bi bi-people"></i>
+                <div>
+                    <small class="text-muted d-block">Количество порций</small>
+                    <strong>{{ recipe.servings }}</strong>
+                </div>
+            </div>
+
+            {% if recipe.category %}
+                <div class="info-item">
+                    <i class="bi bi-grid"></i>
+                    <div>
+                        <small class="text-muted d-block">Категория</small>
+                        <strong>{{ recipe.category.name }}</strong>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="info-item">
+                <i class="bi bi-calendar-check"></i>
+                <div>
+                    <small class="text-muted d-block">Обновлено</small>
+                    <strong>{{ recipe.updated_at|date:"d.m.Y" }}</strong>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-outline-primary" onclick="copyIngredients()">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+                <button class="btn btn-outline-primary" onclick="window.print()">
+                    <i class="bi bi-printer"></i>
+                </button>
+                <button class="btn btn-primary" onclick="shareRecipe()">
+                    <i class="bi bi-share"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ингредиенты -->
+    <div class="col-lg-4" data-aos="fade-up">
+        <div class="recipe-info-card">
+            <h4 class="mb-4"><i class="bi bi-basket me-2" style="color: var(--primary-color);"></i>Ингредиенты</h4>
+            <ul class="ingredients-list">
+                {% for ingredient in recipe.ingredients.splitlines %}
+                    {% if ingredient %}
+                        <li>{{ ingredient }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Инструкция -->
+    <div class="col-lg-4" data-aos="fade-left">
+        <div class="recipe-info-card">
+            <h4 class="mb-4"><i class="bi bi-journal-text me-2" style="color: var(--primary-color);"></i>Приготовление</h4>
+            <ol class="instructions-list">
+                {% for step in recipe.instructions.splitlines %}
+                    {% if step %}
+                        <li>{{ step }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+</div>
+
+<!-- Похожие рецепты -->
+{% if similar_recipes %}
+    <section class="mt-5">
+        <h3 class="mb-4"><i class="bi bi-star me-2" style="color: var(--primary-color);"></i>Похожие рецепты</h3>
+        <div class="row g-4">
+            {% for similar in similar_recipes %}
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+                    <div class="recipe-card" onclick="window.location='{% url 'recipe_detail' similar.pk %}'">
+                        {% if similar.images.all %}
+                            <img src="{{ similar.images.first.image.url }}" class="recipe-card-img" alt="{{ similar.title }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/400x300?text={{ similar.title }}" class="recipe-card-img">
+                        {% endif %}
+                        <div class="recipe-card-body">
+                            <h4 class="recipe-card-title">{{ similar.title }}</h4>
+                            <div class="recipe-card-meta">
+                                <span><i class="bi bi-clock"></i> {{ similar.cooking_time }} мин</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
+
+<!-- Модальное окно галереи -->
+<div class="modal fade" id="galleryModal" tabindex="-1" data-bs-keyboard="false">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body d-flex align-items-center justify-content-center p-0">
+                <!-- Кнопки навигации -->
+                <button class="btn btn-light rounded-circle position-absolute start-0 ms-4"
+                        id="prevImage" onclick="navigateGallery(-1)">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+
+                <button class="btn btn-light rounded-circle position-absolute end-0 me-4"
+                        id="nextImage" onclick="navigateGallery(1)">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+                <!-- Изображение -->
+                <img src="" id="galleryImage" class="img-fluid" style="max-height: 90vh; max-width: 90vw;">
+
+                <!-- Счетчик -->
+                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4">
+                    <span class="badge bg-dark bg-opacity-75 text-white px-4 py-2 rounded-pill"
+                          id="imageCounter">1 / {{ recipe.images.all|length }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Данные для галереи
+const galleryImages = [
+    {% for image in recipe.images.all %}
+        {
+            url: "{{ image.image.url }}",
+            title: "{{ recipe.title }}"
+        },
+    {% endfor %}
+];
+
+let currentImageIndex = 0;
+let galleryModal = null;
+
+// Инициализация модального окна
+document.addEventListener('DOMContentLoaded', function() {
+    galleryModal = new bootstrap.Modal(document.getElementById('galleryModal'));
+
+    // Обработка клавиш
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('galleryModal').classList.contains('show')) {
+            if (e.key === 'ArrowLeft') {
+                navigateGallery(-1);
+            } else if (e.key === 'ArrowRight') {
+                navigateGallery(1);
+            } else if (e.key === 'Escape') {
+                galleryModal.hide();
+            }
+        }
+    });
+});
+
+// Открыть галерею с конкретным изображением
+function openGallery(index) {
+    currentImageIndex = index;
+    updateGalleryImage();
+    galleryModal.show();
+}
+
+// Сменить главное изображение на странице
+function changeMainImage(src, index) {
+    document.getElementById('mainImage').src = src;
+
+    // Обновляем активный класс у миниатюр
+    document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+// Навигация по галерее
+function navigateGallery(direction) {
+    currentImageIndex = (currentImageIndex + direction + galleryImages.length) % galleryImages.length;
+    updateGalleryImage();
+}
+
+// Обновить изображение в галерее
+function updateGalleryImage() {
+    const img = document.getElementById('galleryImage');
+    const counter = document.getElementById('imageCounter');
+
+    if (galleryImages.length > 0) {
+        img.src = galleryImages[currentImageIndex].url;
+        counter.textContent = `${currentImageIndex + 1} / ${galleryImages.length}`;
+
+        // Обновляем состояние кнопок
+        document.getElementById('prevImage').disabled = galleryImages.length === 1;
+        document.getElementById('nextImage').disabled = galleryImages.length === 1;
+    }
+}
+
+// Добавляем поддержку свайпов для мобильных устройств
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.getElementById('galleryModal').addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+});
+
+document.getElementById('galleryModal').addEventListener('touchend', function(e) {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+});
+
+function handleSwipe() {
+    const swipeThreshold = 50;
+    if (touchEndX < touchStartX - swipeThreshold) {
+        // Свайп влево - следующее
+        navigateGallery(1);
+    }
+    if (touchEndX > touchStartX + swipeThreshold) {
+        // Свайп вправо - предыдущее
+        navigateGallery(-1);
+    }
+}
+
+// Копирование ингредиентов
+function copyIngredients() {
+    const ingredients = Array.from(document.querySelectorAll('.ingredients-list li'))
+        .map(li => li.textContent)
+        .join('\n');
+
+    navigator.clipboard.writeText(ingredients).then(() => {
+        showToast('Ингредиенты скопированы в буфер обмена!');
+    });
+}
+
+// Поделиться рецептом
+function shareRecipe() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ recipe.title }}',
+            text: '{{ recipe.description|escapejs }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback
+        navigator.clipboard.writeText(window.location.href);
+        showToast('Ссылка на рецепт скопирована!');
+    }
+}
+
+// Всплывающее уведомление
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'position-fixed bottom-0 end-0 m-3 alert alert-success';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        <i class="bi bi-check-circle me-2"></i>
+        ${message}
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+</script>
+{% endblock %}

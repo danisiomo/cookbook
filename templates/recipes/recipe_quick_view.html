@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="color: #ff6b6b;">{{ recipe.title }}</h2>
+        <a href="{% url 'recipe_detail' recipe.pk %}" class="btn">Полная версия →</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+        <div>
+            {% if recipe.images.all %}
+                <img src="{% with main_image=recipe.images.filter.is_main.first %}{% if main_image %}{{ main_image.image.url }}{% else %}{{ recipe.images.first.image.url }}{% endif %}{% endwith %}"
+                     alt="{{ recipe.title }}" style="width: 100%; border-radius: 10px;">
+            {% else %}
+                <img src="https://via.placeholder.com/300x300?text=Нет+фото" alt="Нет фото" style="width: 100%; border-radius: 10px;">
+            {% endif %}
+
+            <div style="margin-top: 1rem;">
+                <p>⏱ {{ recipe.cooking_time }} мин</p>
+                <p>👥 {{ recipe.servings }} порций</p>
+                {% if recipe.category %}
+                    <p>📂 {{ recipe.category.name }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div>
+            <h3>Ингредиенты</h3>
+            <ul>
+                {% for ingredient in recipe.ingredients.splitlines|slice:":5" %}
+                    {% if ingredient %}
+                        <li>{{ ingredient }}</li>
+                    {% endif %}
+                {% endfor %}
+                {% if recipe.ingredients.splitlines|length > 5 %}
+                    <li>...</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
