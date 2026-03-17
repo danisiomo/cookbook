@@ -6,138 +6,242 @@
 {% block extra_css %}
 <style>
     .recipe-header {
-        background: linear-gradient(135deg, #fff5f5, #ffffff);
-        border-radius: 30px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(255,107,107,0.1);
+        background: linear-gradient(135deg, #FFF0E6, #FFE4D6);
+        border-radius: 40px;
+        padding: 40px;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
     }
 
-    .recipe-gallery {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 1rem;
-        margin: 2rem 0;
+    .recipe-header::before {
+        content: "🍳";
+        position: absolute;
+        font-size: 150px;
+        opacity: 0.1;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .breadcrumb-custom {
+        background: rgba(255,255,255,0.7);
+        backdrop-filter: blur(10px);
+        padding: 15px 25px;
+        border-radius: 50px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .breadcrumb-custom a {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+    .breadcrumb-custom a:hover {
+        color: var(--secondary-color);
+    }
+
+    /* Галерея */
+    .gallery-container {
+        margin-bottom: 40px;
     }
 
     .main-image-container {
         position: relative;
+        border-radius: 30px;
         overflow: hidden;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 20px 40px rgba(139, 69, 19, 0.2);
+        margin-bottom: 20px;
+        aspect-ratio: 16/9;
         cursor: pointer;
     }
 
     .main-image {
         width: 100%;
-        height: 400px;
+        height: 100%;
         object-fit: cover;
-        transition: transform 0.3s;
+        transition: transform 0.5s;
     }
 
-    .main-image:hover {
-        transform: scale(1.02);
+    .main-image-container:hover .main-image {
+        transform: scale(1.05);
     }
 
-    .main-image-container button {
-        opacity: 0;
-        transition: opacity 0.3s;
-        z-index: 10;
-    }
-
-    .main-image-container:hover button {
+    .main-image-container:hover .fullscreen-btn {
         opacity: 1;
+    }
+
+    .fullscreen-btn {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        opacity: 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .fullscreen-btn:hover {
+        background: var(--secondary-color);
+        color: white;
+        transform: scale(1.1);
     }
 
     .thumbnail-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        height: fit-content;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
     }
 
-    .thumbnail {
-        width: 100%;
-        height: 195px;
-        object-fit: cover;
+    .thumbnail-item {
+        position: relative;
         border-radius: 15px;
+        overflow: hidden;
+        aspect-ratio: 1;
         cursor: pointer;
-        transition: all 0.3s;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         opacity: 0.7;
+        transition: all 0.3s;
         border: 3px solid transparent;
     }
 
-    .thumbnail:hover {
+    .thumbnail-item:hover {
         opacity: 1;
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(255,107,107,0.3);
     }
 
-    .thumbnail.active {
+    .thumbnail-item.active {
         opacity: 1;
-        border-color: var(--primary-color);
+        border-color: var(--secondary-color);
+        box-shadow: 0 5px 20px rgba(205, 92, 92, 0.4);
+    }
+
+    .thumbnail-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .more-thumbnail {
+        background: linear-gradient(135deg, var(--secondary-color), #E9967A);
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, var(--primary-color), #ff8e8e);
         color: white;
         font-size: 1.5rem;
         font-weight: bold;
-        opacity: 1;
     }
 
-    .more-thumbnail:hover {
-        background: linear-gradient(135deg, #ff8e8e, var(--primary-color));
-    }
-
-    .recipe-info-card {
+    /* Информация о рецепте */
+    .info-card {
         background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border-radius: 30px;
+        padding: 30px;
         height: 100%;
+        box-shadow: 0 15px 35px rgba(139, 69, 19, 0.1);
+        border: 1px solid rgba(205, 92, 92, 0.1);
+    }
+
+    .info-card h4 {
+        font-family: 'Playfair Display', serif;
+        color: var(--primary-color);
+        margin-bottom: 25px;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-card h4 i {
+        color: var(--secondary-color);
     }
 
     .info-item {
         display: flex;
         align-items: center;
-        gap: 1rem;
-        padding: 1rem;
-        background: var(--light-color);
+        gap: 15px;
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+    }
+
+    .info-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(205, 92, 92, 0.1);
+    }
+
+    .info-icon {
+        width: 50px;
+        height: 50px;
+        background: white;
         border-radius: 15px;
-        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--secondary-color);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
 
-    .info-item i {
-        font-size: 2rem;
+    .info-content {
+        flex: 1;
+    }
+
+    .info-label {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-bottom: 5px;
+    }
+
+    .info-value {
+        font-weight: 600;
         color: var(--primary-color);
+        font-size: 1.1rem;
     }
 
+    /* Ингредиенты и инструкция */
     .ingredients-list, .instructions-list {
         list-style: none;
         padding: 0;
     }
 
-    .ingredients-list li, .instructions-list li {
-        padding: 0.75rem 1rem;
-        background: white;
-        border-radius: 10px;
-        margin-bottom: 0.5rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    .ingredients-list li {
+        padding: 12px 15px;
+        background: var(--light-bg);
+        border-radius: 15px;
+        margin-bottom: 8px;
         display: flex;
-        gap: 1rem;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s;
+        border: 1px solid rgba(205, 92, 92, 0.1);
+    }
+
+    .ingredients-list li:hover {
+        background: white;
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(205, 92, 92, 0.1);
+        border-color: var(--secondary-color);
     }
 
     .ingredients-list li::before {
         content: "•";
-        color: var(--primary-color);
+        color: var(--secondary-color);
         font-weight: bold;
         font-size: 1.5rem;
-        line-height: 1;
     }
 
     .instructions-list {
@@ -146,16 +250,28 @@
 
     .instructions-list li {
         counter-increment: step-counter;
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 15px;
+        margin-bottom: 10px;
         display: flex;
-        gap: 1rem;
+        gap: 15px;
+        transition: all 0.3s;
+        border: 1px solid rgba(205, 92, 92, 0.1);
+    }
+
+    .instructions-list li:hover {
+        background: white;
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(205, 92, 92, 0.1);
     }
 
     .instructions-list li::before {
         content: counter(step-counter);
-        background: var(--primary-color);
+        background: linear-gradient(135deg, var(--secondary-color), #E9967A);
         color: white;
-        width: 25px;
-        height: 25px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -163,71 +279,182 @@
         font-size: 0.9rem;
         font-weight: bold;
         flex-shrink: 0;
+        box-shadow: 0 3px 10px rgba(205, 92, 92, 0.3);
     }
 
+    /* Кнопки действий */
     .action-buttons {
         display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
+        gap: 10px;
+        margin-top: 25px;
+        flex-wrap: wrap;
     }
 
-    .action-buttons .btn {
+    .action-btn {
         flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s;
+        background: white;
+        color: var(--primary-color);
+        border: 1px solid rgba(205, 92, 92, 0.2);
+        min-width: 120px;
     }
 
-    /* Стили для модального окна галереи */
+    .action-btn:hover {
+        background: linear-gradient(135deg, var(--secondary-color), #E9967A);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(205, 92, 92, 0.3);
+        border-color: transparent;
+    }
+
+    .action-btn i {
+        font-size: 1.2rem;
+    }
+
+    .admin-actions {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .admin-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 15px;
+        background: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: var(--primary-color);
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        text-decoration: none;
+    }
+
+    .admin-btn:hover {
+        transform: translateY(-3px);
+    }
+
+    .admin-btn.edit:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .admin-btn.delete:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    /* Похожие рецепты */
+    .similar-section {
+        margin-top: 60px;
+    }
+
+    .similar-title {
+        font-family: 'Playfair Display', serif;
+        color: var(--primary-color);
+        margin-bottom: 30px;
+        text-align: center;
+        font-size: 2rem;
+    }
+
+    .similar-title span {
+        color: var(--secondary-color);
+    }
+
+    /* Модальное окно галереи */
     #galleryModal .modal-content {
         background: rgba(0,0,0,0.95);
     }
 
-    #galleryModal .btn {
-        width: 50px;
-        height: 50px;
-        font-size: 1.5rem;
+    #galleryModal .btn-nav {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: white;
+        font-size: 2rem;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: all 0.3s;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
         z-index: 1050;
-        opacity: 0.7;
-        transition: opacity 0.3s;
+        backdrop-filter: blur(5px);
     }
 
-    #galleryModal .btn:hover {
+    #galleryModal .btn-nav:hover {
+        background: var(--secondary-color);
+        border-color: transparent;
+    }
+
+    #galleryModal .btn-nav.prev {
+        left: 20px;
+    }
+
+    #galleryModal .btn-nav.next {
+        right: 20px;
+    }
+
+    #galleryModal .btn-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+        background-color: white;
+        opacity: 0.7;
+    }
+
+    #galleryModal .btn-close:hover {
         opacity: 1;
     }
 
-    #galleryModal .btn:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-    }
-
-    #galleryImage {
-        max-height: 90vh;
-        max-width: 90vw;
-        object-fit: contain;
+    #galleryCounter {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.5);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-size: 1rem;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255,255,255,0.1);
     }
 
     @media (max-width: 768px) {
-        .recipe-gallery {
-            grid-template-columns: 1fr;
-        }
-
-        .main-image {
-            height: 300px;
+        .recipe-header {
+            padding: 25px;
         }
 
         .thumbnail-grid {
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
         }
 
-        .thumbnail {
-            height: 80px;
+        .action-buttons {
+            flex-direction: column;
         }
 
-        #galleryModal .btn {
-            width: 40px;
-            height: 40px;
-            font-size: 1.2rem;
+        #galleryModal .btn-nav {
+            width: 45px;
+            height: 45px;
+            font-size: 1.5rem;
         }
     }
 </style>
@@ -235,141 +462,154 @@
 
 {% block content %}
 <!-- Хлебные крошки -->
-<nav aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'recipe_list' %}">Рецепты</a></li>
-        {% if recipe.category %}
-            <li class="breadcrumb-item">
-                <a href="{% url 'recipe_list' %}?category={{ recipe.category.slug }}">
-                    {{ recipe.category.name }}
-                </a>
-            </li>
-        {% endif %}
-        <li class="breadcrumb-item active">{{ recipe.title }}</li>
-    </ol>
-</nav>
+<div class="breadcrumb-custom" data-aos="fade-up">
+    <i class="bi bi-house-door me-2" style="color: var(--secondary-color);"></i>
+    <a href="{% url 'home' %}">Главная</a>
+    <i class="bi bi-chevron-right mx-2"></i>
+    <a href="{% url 'recipe_list' %}">Рецепты</a>
+    {% if recipe.category %}
+        <i class="bi bi-chevron-right mx-2"></i>
+        <a href="{% url 'recipe_list' %}?category={{ recipe.category.slug }}">{{ recipe.category.name }}</a>
+    {% endif %}
+    <i class="bi bi-chevron-right mx-2"></i>
+    <span style="color: var(--secondary-color);">{{ recipe.title }}</span>
+</div>
 
 <!-- Заголовок и действия -->
-<div class="d-flex justify-content-between align-items-start mb-4">
-    <div>
-        <h1 class="display-5 fw-bold" style="color: var(--dark-color);">{{ recipe.title }}</h1>
-        <div class="d-flex gap-3 text-muted">
-            <span><i class="bi bi-person"></i> {{ recipe.author.username }}</span>
-            <span><i class="bi bi-calendar"></i> {{ recipe.created_at|date:"d.m.Y" }}</span>
-        </div>
-    </div>
+<div class="recipe-header" data-aos="fade-up">
+    <div class="position-relative">
+        <h1 class="display-4 fw-bold mb-3" style="color: var(--primary-color); font-family: 'Playfair Display', serif;">
+            {{ recipe.title }}
+        </h1>
 
-    {% if user == recipe.author or user.is_staff %}
-        <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-gear"></i> Действия
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{% url 'recipe_edit' recipe.pk %}">
-                    <i class="bi bi-pencil text-primary me-2"></i>Редактировать
-                </a></li>
-                <li><a class="dropdown-item text-danger" href="{% url 'recipe_delete' recipe.pk %}">
-                    <i class="bi bi-trash text-danger me-2"></i>Удалить
-                </a></li>
-            </ul>
+        <div class="d-flex gap-3 mb-3" style="color: var(--text-light);">
+            <span><i class="bi bi-person-circle me-2" style="color: var(--secondary-color);"></i>{{ recipe.author.username }}</span>
+            <span><i class="bi bi-calendar me-2" style="color: var(--secondary-color);"></i>{{ recipe.created_at|date:"d.m.Y" }}</span>
         </div>
-    {% endif %}
+
+        {% if recipe.category %}
+            <span class="category-badge">{{ recipe.category.name }}</span>
+        {% endif %}
+
+        <!-- Админские действия -->
+        {% if user == recipe.author or user.is_staff %}
+            <div class="admin-actions">
+                <a href="{% url 'recipe_edit' recipe.pk %}" class="admin-btn edit" title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'recipe_delete' recipe.pk %}" class="admin-btn delete" title="Удалить">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        {% endif %}
+    </div>
 </div>
 
 <!-- Галерея -->
 {% if recipe.images.all %}
-    {% with images=recipe.images.all %}
-        <div class="recipe-gallery" data-aos="fade-up">
-            <!-- Главное изображение -->
-            <div class="main-image-container">
-                <img src="{{ images.0.image.url }}" class="main-image" id="mainImage"
-                     alt="{{ recipe.title }}" onclick="openGallery(0)">
-                <button class="btn btn-light position-absolute bottom-0 end-0 m-3"
-                        onclick="openGallery(0)" title="Открыть галерею">
-                    <i class="bi bi-arrows-fullscreen"></i>
-                </button>
-            </div>
-
-            <!-- Миниатюры -->
-            {% if images|length > 1 %}
-                <div class="thumbnail-grid">
-                    {% for image in images|slice:"1:5" %}
-                        <img src="{{ image.image.url }}" class="thumbnail"
-                             data-index="{{ forloop.counter }}"
-                             alt="{{ recipe.title }}"
-                             onclick="changeMainImage(this.src, {{ forloop.counter }})">
-                    {% endfor %}
-
-                    {% if images|length > 5 %}
-                        <div class="thumbnail more-thumbnail" onclick="openGallery(0)">
-                            <span>+{{ images|length|add:"-4" }}</span>
-                        </div>
-                    {% endif %}
-                </div>
-            {% endif %}
+    <div class="gallery-container" data-aos="fade-up">
+        <div class="main-image-container" onclick="openGallery(0)">
+            <img src="{{ recipe.images.first.image.url }}" class="main-image" id="mainImage" alt="{{ recipe.title }}">
+            <button class="fullscreen-btn">
+                <i class="bi bi-arrows-fullscreen"></i>
+            </button>
         </div>
-    {% endwith %}
+
+        {% if recipe.images.count > 1 %}
+            <div class="thumbnail-grid">
+                {% for image in recipe.images.all|slice:"1:5" %}
+                    <div class="thumbnail-item" onclick="changeMainImage('{{ image.image.url }}', this)">
+                        <img src="{{ image.image.url }}" alt="{{ recipe.title }}">
+                    </div>
+                {% endfor %}
+
+                {% if recipe.images.count > 5 %}
+                    <div class="thumbnail-item more-thumbnail" onclick="openGallery(0)">
+                        <span>+{{ recipe.images.count|add:"-4" }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
 {% endif %}
 
-<div class="row g-4 mt-2">
-    <!-- Информация о рецепте -->
+<div class="row g-4">
+    <!-- Левая колонка - информация -->
     <div class="col-lg-4" data-aos="fade-right">
-        <div class="recipe-info-card">
-            <h4 class="mb-4"><i class="bi bi-info-circle me-2" style="color: var(--primary-color);"></i>Информация</h4>
+        <div class="info-card">
+            <h4>
+                <i class="bi bi-info-circle"></i>
+                О рецепте
+            </h4>
 
             <div class="info-item">
-                <i class="bi bi-clock"></i>
-                <div>
-                    <small class="text-muted d-block">Время приготовления</small>
-                    <strong>{{ recipe.cooking_time }} минут</strong>
+                <div class="info-icon">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="info-content">
+                    <div class="info-label">Время приготовления</div>
+                    <div class="info-value">{{ recipe.cooking_time }} минут</div>
                 </div>
             </div>
 
             <div class="info-item">
-                <i class="bi bi-people"></i>
-                <div>
-                    <small class="text-muted d-block">Количество порций</small>
-                    <strong>{{ recipe.servings }}</strong>
+                <div class="info-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="info-content">
+                    <div class="info-label">Количество порций</div>
+                    <div class="info-value">{{ recipe.servings }} порций</div>
                 </div>
             </div>
 
             {% if recipe.category %}
                 <div class="info-item">
-                    <i class="bi bi-grid"></i>
-                    <div>
-                        <small class="text-muted d-block">Категория</small>
-                        <strong>{{ recipe.category.name }}</strong>
+                    <div class="info-icon">
+                        <i class="bi bi-grid"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Категория</div>
+                        <div class="info-value">{{ recipe.category.name }}</div>
                     </div>
                 </div>
             {% endif %}
 
             <div class="info-item">
-                <i class="bi bi-calendar-check"></i>
-                <div>
-                    <small class="text-muted d-block">Обновлено</small>
-                    <strong>{{ recipe.updated_at|date:"d.m.Y" }}</strong>
+                <div class="info-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="info-content">
+                    <div class="info-label">Обновлено</div>
+                    <div class="info-value">{{ recipe.updated_at|date:"d.m.Y" }}</div>
                 </div>
             </div>
 
+            <!-- Кнопки действий -->
             <div class="action-buttons">
-                <button class="btn btn-outline-primary" onclick="copyIngredients()">
+                <button class="action-btn" onclick="copyIngredients()">
                     <i class="bi bi-clipboard"></i>
+                    Копировать
                 </button>
-                <button class="btn btn-outline-primary" onclick="window.print()">
+                <button class="action-btn" onclick="window.print()">
                     <i class="bi bi-printer"></i>
+                    Печать
                 </button>
-                <button class="btn btn-primary" onclick="shareRecipe()">
+                <button class="action-btn" onclick="shareRecipe()">
                     <i class="bi bi-share"></i>
+                    Поделиться
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Ингредиенты -->
+    <!-- Средняя колонка - ингредиенты -->
     <div class="col-lg-4" data-aos="fade-up">
-        <div class="recipe-info-card">
-            <h4 class="mb-4"><i class="bi bi-basket me-2" style="color: var(--primary-color);"></i>Ингредиенты</h4>
+        <div class="info-card">
+            <h4>
+                <i class="bi bi-basket"></i>
+                Ингредиенты
+            </h4>
+
             <ul class="ingredients-list">
                 {% for ingredient in recipe.ingredients.splitlines %}
                     {% if ingredient %}
@@ -380,10 +620,14 @@
         </div>
     </div>
 
-    <!-- Инструкция -->
+    <!-- Правая колонка - инструкция -->
     <div class="col-lg-4" data-aos="fade-left">
-        <div class="recipe-info-card">
-            <h4 class="mb-4"><i class="bi bi-journal-text me-2" style="color: var(--primary-color);"></i>Приготовление</h4>
+        <div class="info-card">
+            <h4>
+                <i class="bi bi-journal-text"></i>
+                Приготовление
+            </h4>
+
             <ol class="instructions-list">
                 {% for step in recipe.instructions.splitlines %}
                     {% if step %}
@@ -397,8 +641,11 @@
 
 <!-- Похожие рецепты -->
 {% if similar_recipes %}
-    <section class="mt-5">
-        <h3 class="mb-4"><i class="bi bi-star me-2" style="color: var(--primary-color);"></i>Похожие рецепты</h3>
+    <section class="similar-section">
+        <h2 class="similar-title">
+            Похожие <span>рецепты</span>
+        </h2>
+
         <div class="row g-4">
             {% for similar in similar_recipes %}
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
@@ -406,7 +653,7 @@
                         {% if similar.images.all %}
                             <img src="{{ similar.images.first.image.url }}" class="recipe-card-img" alt="{{ similar.title }}">
                         {% else %}
-                            <img src="https://via.placeholder.com/400x300?text={{ similar.title }}" class="recipe-card-img">
+                            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" class="recipe-card-img">
                         {% endif %}
                         <div class="recipe-card-body">
                             <h4 class="recipe-card-title">{{ similar.title }}</h4>
@@ -425,30 +672,21 @@
 <div class="modal fade" id="galleryModal" tabindex="-1" data-bs-keyboard="false">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content bg-dark">
-            <div class="modal-header border-0">
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+
+            <button class="btn-nav prev" onclick="navigateGallery(-1)">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+
+            <button class="btn-nav next" onclick="navigateGallery(1)">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+
             <div class="modal-body d-flex align-items-center justify-content-center p-0">
-                <!-- Кнопки навигации -->
-                <button class="btn btn-light rounded-circle position-absolute start-0 ms-4"
-                        id="prevImage" onclick="navigateGallery(-1)">
-                    <i class="bi bi-chevron-left"></i>
-                </button>
-
-                <button class="btn btn-light rounded-circle position-absolute end-0 me-4"
-                        id="nextImage" onclick="navigateGallery(1)">
-                    <i class="bi bi-chevron-right"></i>
-                </button>
-
-                <!-- Изображение -->
                 <img src="" id="galleryImage" class="img-fluid" style="max-height: 90vh; max-width: 90vw;">
-
-                <!-- Счетчик -->
-                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4">
-                    <span class="badge bg-dark bg-opacity-75 text-white px-4 py-2 rounded-pill"
-                          id="imageCounter">1 / {{ recipe.images.all|length }}</span>
-                </div>
             </div>
+
+            <div id="galleryCounter">1 / {{ recipe.images.all|length }}</div>
         </div>
     </div>
 </div>
@@ -467,7 +705,7 @@ const galleryImages = [
 let currentImageIndex = 0;
 let galleryModal = null;
 
-// Инициализация модального окна
+// Инициализация
 document.addEventListener('DOMContentLoaded', function() {
     galleryModal = new bootstrap.Modal(document.getElementById('galleryModal'));
 
@@ -483,28 +721,36 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // Выделяем первую миниатюру как активную
+    const firstThumb = document.querySelector('.thumbnail-item');
+    if (firstThumb) {
+        firstThumb.classList.add('active');
+    }
 });
 
-// Открыть галерею с конкретным изображением
+// Открыть галерею
 function openGallery(index) {
+    if (galleryImages.length === 0) return;
     currentImageIndex = index;
     updateGalleryImage();
     galleryModal.show();
 }
 
-// Сменить главное изображение на странице
-function changeMainImage(src, index) {
+// Сменить главное изображение
+function changeMainImage(src, element) {
     document.getElementById('mainImage').src = src;
 
     // Обновляем активный класс у миниатюр
-    document.querySelectorAll('.thumbnail').forEach(thumb => {
+    document.querySelectorAll('.thumbnail-item').forEach(thumb => {
         thumb.classList.remove('active');
     });
-    event.target.classList.add('active');
+    element.classList.add('active');
 }
 
 // Навигация по галерее
 function navigateGallery(direction) {
+    if (galleryImages.length === 0) return;
     currentImageIndex = (currentImageIndex + direction + galleryImages.length) % galleryImages.length;
     updateGalleryImage();
 }
@@ -512,51 +758,20 @@ function navigateGallery(direction) {
 // Обновить изображение в галерее
 function updateGalleryImage() {
     const img = document.getElementById('galleryImage');
-    const counter = document.getElementById('imageCounter');
+    const counter = document.getElementById('galleryCounter');
 
-    if (galleryImages.length > 0) {
-        img.src = galleryImages[currentImageIndex].url;
-        counter.textContent = `${currentImageIndex + 1} / ${galleryImages.length}`;
-
-        // Обновляем состояние кнопок
-        document.getElementById('prevImage').disabled = galleryImages.length === 1;
-        document.getElementById('nextImage').disabled = galleryImages.length === 1;
-    }
-}
-
-// Добавляем поддержку свайпов для мобильных устройств
-let touchStartX = 0;
-let touchEndX = 0;
-
-document.getElementById('galleryModal').addEventListener('touchstart', function(e) {
-    touchStartX = e.changedTouches[0].screenX;
-});
-
-document.getElementById('galleryModal').addEventListener('touchend', function(e) {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
-});
-
-function handleSwipe() {
-    const swipeThreshold = 50;
-    if (touchEndX < touchStartX - swipeThreshold) {
-        // Свайп влево - следующее
-        navigateGallery(1);
-    }
-    if (touchEndX > touchStartX + swipeThreshold) {
-        // Свайп вправо - предыдущее
-        navigateGallery(-1);
-    }
+    img.src = galleryImages[currentImageIndex].url;
+    counter.textContent = `${currentImageIndex + 1} / ${galleryImages.length}`;
 }
 
 // Копирование ингредиентов
 function copyIngredients() {
     const ingredients = Array.from(document.querySelectorAll('.ingredients-list li'))
-        .map(li => li.textContent)
+        .map(li => li.textContent.trim())
         .join('\n');
 
     navigator.clipboard.writeText(ingredients).then(() => {
-        showToast('Ингредиенты скопированы в буфер обмена!');
+        showToast('✅ Ингредиенты скопированы');
     });
 }
 
@@ -569,23 +784,37 @@ function shareRecipe() {
             url: window.location.href
         });
     } else {
-        // Fallback
         navigator.clipboard.writeText(window.location.href);
-        showToast('Ссылка на рецепт скопирована!');
+        showToast('🔗 Ссылка скопирована');
     }
 }
 
-// Всплывающее уведомление
+// Показать уведомление
 function showToast(message) {
     const toast = document.createElement('div');
-    toast.className = 'position-fixed bottom-0 end-0 m-3 alert alert-success';
+    toast.className = 'position-fixed bottom-0 end-0 m-4 p-3 bg-white rounded-4 shadow-lg';
     toast.style.zIndex = '9999';
-    toast.innerHTML = `
-        <i class="bi bi-check-circle me-2"></i>
-        ${message}
-    `;
+    toast.style.animation = 'slideIn 0.3s';
+    toast.innerHTML = message;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s';
+        setTimeout(() => toast.remove(), 300);
+    }, 2000);
 }
+
+// Добавляем стили для анимаций
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
 </script>
 {% endblock %}

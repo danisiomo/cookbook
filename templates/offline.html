@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Нет соединения{% endblock %}
+
+{% block content %}
+<div class="text-center py-5" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div>
+        <i class="bi bi-wifi-off" style="font-size: 5rem; color: var(--secondary-color);"></i>
+        <h1 class="mt-4" style="color: var(--primary-color);">Нет соединения с интернетом</h1>
+        <p class="text-muted mb-4">Но вы можете просмотреть ранее сохраненные рецепты</p>
+        <a href="{% url 'recipe_list' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-book me-2"></i>К рецептам
+        </a>
+    </div>
+</div>
+{% endblock %}

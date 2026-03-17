@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('recipes.urls')),  # все основные маршруты будут в приложении
+    path('', include('pwa.urls')),  # Для PWA
 ]
 
 # Для раздачи медиафайлов в режиме разработки

@@ -1,17 +1,21 @@
+import random  # Важно: весь модуль, не функция
+import re
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .models import Recipe, Category, RecipeImage
-from .forms import RegisterForm, LoginForm, RecipeForm, RecipeImageForm
 from django.core.paginator import Paginator
-from django.contrib.auth.models import User
 from django.db.models import Q, Value, IntegerField, Case, When
 from django.http import JsonResponse
-import re
+from django.contrib.auth.models import User
+from .models import Recipe, Category, RecipeImage
+from .forms import RegisterForm, LoginForm, RecipeForm, RecipeImageForm
+
+import random  # Убедись, что эта строка есть в начале файла
+
 
 def home(request):
-    """Главная страница с последними рецептами"""
+    """Главная страница"""
     recipes = Recipe.objects.all().order_by('-created_at')[:6]
     categories = Category.objects.all()
 
@@ -25,41 +29,56 @@ def home(request):
         'categories': categories,
         'total_recipes': total_recipes,
         'total_categories': total_categories,
-        'total_users': total_users
+        'total_users': total_users,
     })
 
+def offline(request):
+    """Страница для офлайн режима"""
+    return render(request, 'offline.html')
 
 def recipe_list(request):
-    """Максимально простой и надежный поиск"""
+    """Страница со всеми рецептами с улучшенным поиском и пагинацией"""
+    # Начинаем со всех рецептов
     recipes = Recipe.objects.all().order_by('-created_at')
     categories = Category.objects.all()
 
+    # Получаем параметры
     query = request.GET.get('q', '').strip()
+    category_slug = request.GET.get('category')
 
+    # Применяем поиск если есть запрос
     if query:
-        # Приводим запрос к нижнему регистру
-        query_lower = query.lower()
+        # Очищаем запрос от лишних пробелов
+        cleaned_query = ' '.join(query.split())
 
-        # Фильтруем вручную через list comprehension
-        filtered_recipes = []
-        for recipe in recipes:
-            # Приводим все поля к нижнему регистру для сравнения
-            title_match = query_lower in recipe.title.lower()
-            ingredients_match = query_lower in recipe.ingredients.lower()
-            description_match = query_lower in recipe.description.lower()
+        # Разбиваем на слова
+        search_terms = cleaned_query.split()
 
-            if title_match or ingredients_match or description_match:
-                filtered_recipes.append(recipe)
-
-        # Преобразуем обратно в QuerySet для пагинации
-        from django.db.models import Q
+        # Создаем Q объект для поиска
         q_objects = Q()
-        for recipe in filtered_recipes:
-            q_objects |= Q(pk=recipe.pk)
 
-        recipes = Recipe.objects.filter(q_objects)
+        for term in search_terms:
+            if term:  # игнорируем пустые строки
+                # Ищем во всех полях
+                q_objects |= (
+                        Q(title__icontains=term) |
+                        Q(ingredients__icontains=term) |
+                        Q(description__icontains=term) |
+                        Q(instructions__icontains=term)
+                )
 
-        print(f"Поиск: '{query}' -> найдено {len(filtered_recipes)} рецептов")
+        # Применяем фильтр
+        if q_objects:
+            recipes = recipes.filter(q_objects).distinct()
+
+            # Для отладки - выведем в консоль
+            print(f"Поиск: '{query}'")
+            print(f"Термы: {search_terms}")
+            print(f"Найдено рецептов: {recipes.count()}")
+
+    # Применяем фильтр по категории
+    if category_slug:
+        recipes = recipes.filter(category__slug=category_slug)
 
     # Пагинация
     paginator = Paginator(recipes, 9)
@@ -70,7 +89,7 @@ def recipe_list(request):
         'page_obj': page_obj,
         'categories': categories,
         'query': query,
-        'current_category': request.GET.get('category')
+        'current_category': category_slug
     })
 
 def recipe_detail(request, pk):

@@ -1,76 +1,104 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Главная - Семейная кулинарная книга{% endblock %}
+{% block title %}Главная - Кулинарная книга{% endblock %}
 
 {% block content %}
 <!-- Герой секция -->
-<section class="text-center py-5" data-aos="fade-up">
-    <h1 class="display-4 fw-bold mb-4" style="color: var(--primary-color);">
-        <i class="bi bi-egg-fried me-3"></i>Семейная кулинарная книга
+<section class="hero-section text-center" data-aos="fade-up">
+    <h1 class="display-3 fw-bold mb-4" style="color: var(--primary-color);">
+        Ваши любимые рецепты
     </h1>
-    <p class="lead text-muted mb-5">
-        Сохраняйте любимые рецепты вашей семьи и готовьте с удовольствием!
+    <p class="lead mb-5" style="color: var(--text-light); font-size: 1.3rem;">
+        Сохраняйте семейные рецепты, делитесь с близкими и готовьте с удовольствием
     </p>
 
     {% if not user.is_authenticated %}
-        <div class="d-flex gap-3 justify-content-center">
-            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
-                <i class="bi bi-person-plus me-2"></i>Начать готовить
+        <div class="d-flex gap-4 justify-content-center">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5 py-3">
+                <i class="bi bi-person-plus me-2"></i>Присоединиться
             </a>
-            <a href="{% url 'recipe_list' %}" class="btn btn-outline-primary btn-lg">
+            <a href="{% url 'recipe_list' %}" class="btn btn-outline-primary btn-lg px-5 py-3">
                 <i class="bi bi-book me-2"></i>Смотреть рецепты
             </a>
         </div>
     {% endif %}
 </section>
 
-<!-- Статистика -->
-<section class="row g-4 my-5">
-    <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
-        <div class="card border-0 shadow-sm text-center p-4">
-            <i class="bi bi-journal-bookmark-fill display-4" style="color: var(--primary-color);"></i>
-            <h3 class="mt-3">{{ total_recipes|default:0 }}</h3>
-            <p class="text-muted mb-0">Всего рецептов</p>
+<!-- Новая статистика -->
+<div class="stats-container" data-aos="fade-up" data-aos-delay="100">
+    <div class="stat-item">
+        <div class="stat-icon float-animation">
+            <i class="bi bi-journal-bookmark-fill"></i>
         </div>
+        <div class="stat-number">{{ total_recipes|default:0 }}</div>
+        <div class="stat-label">Рецептов</div>
     </div>
-    <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
-        <div class="card border-0 shadow-sm text-center p-4">
-            <i class="bi bi-grid-fill display-4" style="color: var(--secondary-color);"></i>
-            <h3 class="mt-3">{{ total_categories|default:0 }}</h3>
-            <p class="text-muted mb-0">Категорий</p>
+
+    <div class="stat-item">
+        <div class="stat-icon float-animation" style="animation-delay: 0.2s;">
+            <i class="bi bi-grid-fill"></i>
         </div>
+        <div class="stat-number">{{ total_categories|default:0 }}</div>
+        <div class="stat-label">Категорий</div>
     </div>
-    <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
-        <div class="card border-0 shadow-sm text-center p-4">
-            <i class="bi bi-people-fill display-4" style="color: var(--dark-color);"></i>
-            <h3 class="mt-3">{{ total_users|default:0 }}</h3>
-            <p class="text-muted mb-0">Пользователей</p>
+
+    <div class="stat-item">
+        <div class="stat-icon float-animation" style="animation-delay: 0.4s;">
+            <i class="bi bi-people-fill"></i>
         </div>
+        <div class="stat-number">{{ total_users|default:0 }}</div>
+        <div class="stat-label">Поваров</div>
     </div>
-</section>
+</div>
+
+<!-- Популярные категории -->
+{% if categories %}
+    <section class="my-5">
+        <h2 class="text-center mb-5" data-aos="fade-up">
+            <span style="color: var(--primary-color);">Популярные</span>
+            <span style="color: var(--secondary-color);">категории</span>
+        </h2>
+
+        <div class="row g-4">
+            {% for category in categories|slice:":6" %}
+                <div class="col-lg-2 col-md-4 col-6" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:100 }}">
+                    <a href="{% url 'recipe_list' %}?category={{ category.slug }}" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm text-center p-4 h-100" style="border-radius: 20px; background: white;">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3"
+                                 style="width: 80px; height: 80px; background: linear-gradient(135deg, #FFF5EB, #FFE9DC);">
+                                <i class="bi bi-folder2-open fs-1" style="color: var(--secondary-color);"></i>
+                            </div>
+                            <h6 class="fw-bold mb-2" style="color: var(--primary-color);">{{ category.name }}</h6>
+                            <small class="text-muted">{{ category.recipes.count }} рецептов</small>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
 
 <!-- Последние рецепты -->
 <section class="my-5">
-    <h2 class="text-center mb-5" data-aos="fade-up">
-        <i class="bi bi-clock-history me-2" style="color: var(--primary-color);"></i>
-        Последние рецепты
-    </h2>
+    <div class="d-flex justify-content-between align-items-center mb-5" data-aos="fade-up">
+        <h2>
+            <span style="color: var(--primary-color);">Свежие</span>
+            <span style="color: var(--secondary-color);">рецепты</span>
+        </h2>
+        <a href="{% url 'recipe_list' %}" class="btn btn-outline-primary">
+            Все рецепты <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+    </div>
 
     <div class="row g-4">
         {% for recipe in recipes %}
             <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
                 <div class="recipe-card" onclick="window.location='{% url 'recipe_detail' recipe.pk %}'">
                     {% if recipe.images.all %}
-                        {% with main_image=recipe.images.filter.is_main.first %}
-                            {% if main_image %}
-                                <img src="{{ main_image.image.url }}" class="recipe-card-img" alt="{{ recipe.title }}">
-                            {% else %}
-                                <img src="https://via.placeholder.com/400x300?text={{ recipe.title }}" class="recipe-card-img" alt="{{ recipe.title }}">
-                            {% endif %}
-                        {% endwith %}
+                        <img src="{{ recipe.images.first.image.url }}" class="recipe-card-img" alt="{{ recipe.title }}">
                     {% else %}
-                        <img src="https://via.placeholder.com/400x300?text={{ recipe.title }}" class="recipe-card-img" alt="{{ recipe.title }}">
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" class="recipe-card-img" alt="{{ recipe.title }}">
                     {% endif %}
 
                     <div class="recipe-card-body">
@@ -86,18 +114,23 @@
                         </div>
 
                         <p class="text-muted small mb-3">
-                            {{ recipe.description|truncatewords:15 }}
+                            {{ recipe.description|truncatewords:12 }}
                         </p>
 
-                        <span class="btn btn-outline-primary btn-sm">
-                            Смотреть рецепт <i class="bi bi-arrow-right"></i>
-                        </span>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-person-circle me-1"></i> {{ recipe.author.username }}
+                            </small>
+                            <span class="btn btn-outline-primary btn-sm">
+                                Готовить <i class="bi bi-arrow-right"></i>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
         {% empty %}
             <div class="col-12 text-center py-5">
-                <i class="bi bi-emoji-frown display-1 text-muted"></i>
+                <i class="bi bi-emoji-frown display-1" style="color: var(--text-light);"></i>
                 <h3 class="mt-3">Пока нет рецептов</h3>
                 <p class="text-muted">Будьте первым, кто добавит рецепт!</p>
                 {% if user.is_authenticated %}
@@ -108,37 +141,24 @@
             </div>
         {% endfor %}
     </div>
-
-    {% if recipes %}
-        <div class="text-center mt-5">
-            <a href="{% url 'recipe_list' %}" class="btn btn-primary btn-lg">
-                Все рецепты <i class="bi bi-arrow-right ms-2"></i>
-            </a>
-        </div>
-    {% endif %}
 </section>
 
-<!-- Категории -->
-{% if categories %}
-    <section class="my-5">
-        <h2 class="text-center mb-5" data-aos="fade-up">
-            <i class="bi bi-grid me-2" style="color: var(--primary-color);"></i>
-            Популярные категории
-        </h2>
-
-        <div class="row g-4">
-            {% for category in categories|slice:":6" %}
-                <div class="col-lg-2 col-md-4 col-6" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:200 }}">
-                    <a href="{% url 'recipe_list' %}?category={{ category.slug }}" class="text-decoration-none">
-                        <div class="card border-0 shadow-sm text-center p-3">
-                            <i class="bi bi-folder2-open display-5" style="color: var(--primary-color);"></i>
-                            <h6 class="mt-2 mb-1">{{ category.name }}</h6>
-                            <small class="text-muted">{{ category.recipes.count }} рецептов</small>
-                        </div>
-                    </a>
-                </div>
-            {% endfor %}
-        </div>
-    </section>
-{% endif %}
+<!-- Призыв к действию -->
+<section class="text-center py-5" data-aos="fade-up">
+    <div class="p-5 rounded-4" style="background: linear-gradient(135deg, var(--primary-color) 0%, #34495E 100%);">
+        <h2 class="text-white mb-4">Поделитесь своим рецептом</h2>
+        <p class="text-white-50 mb-4 fs-5">
+            Есть любимый семейный рецепт? Добавьте его в нашу коллекцию!
+        </p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'recipe_create' %}" class="btn btn-primary btn-lg px-5 py-3">
+                <i class="bi bi-plus-circle me-2"></i>Добавить рецепт
+            </a>
+        {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5 py-3">
+                <i class="bi bi-person-plus me-2"></i>Присоединиться
+            </a>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

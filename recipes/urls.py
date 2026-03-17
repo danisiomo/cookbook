@@ -16,4 +16,5 @@ urlpatterns = [
     path('recipes/letter/<str:letter>/', views.recipe_list_by_first_letter, name='recipes_by_letter'),
     path('api/autocomplete/', views.recipe_autocomplete, name='recipe_autocomplete'),
     path('image/<int:pk>/delete/', views.image_delete, name='image_delete'),
+    path('offline/', views.offline, name='offline'),
 ]
