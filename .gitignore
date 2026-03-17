@@ -15,6 +15,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.env.local
+.env.production
 
 # IDE
 .vscode/
@@ -22,3 +24,6 @@ venv.bak/
 *.swp
 *.swo
 *~
+
+# Database
+*.sqlite3

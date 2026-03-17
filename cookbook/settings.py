@@ -60,12 +60,47 @@ TEMPLATES = [
 WSGI_APPLICATION = 'cookbook.wsgi.application'
 
 # База данных
-DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
-        conn_max_age=600
-    )
-}
+import os
+from pathlib import Path
+from decouple import config
+import sys
+
+# Определяем, работаем ли мы локально или на хостинге
+ON_HOSTING = 'WEBSITE_HOSTNAME' in os.environ  # Для Azure
+ON_HOSTING = ON_HOSTING or 'DYNO' in os.environ  # Для Heroku
+ON_HOSTING = ON_HOSTING or os.path.exists('/app')  # Для некоторых хостингов
+ON_HOSTING = ON_HOSTING or 'DATABASE_URL' in os.environ  # Если есть DATABASE_URL
+
+# Для отладки - выводим информацию
+print(f"🚀 Режим работы: {'ХОСТИНГ' if ON_HOSTING else 'ЛОКАЛЬНЫЙ'}")
+print(f"📁 Текущая директория: {BASE_DIR}")
+
+if ON_HOSTING:
+    # На хостинге используем MySQL
+    print("✅ Используем MySQL на хостинге")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': config('DB_NAME', default='cookbook_db'),
+            'USER': config('DB_USER', default='cookbook_user'),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default='localhost'),  # На хостинге это localhost
+            'PORT': config('DB_PORT', default='3306'),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
+    }
+else:
+    # Локально используем SQLite
+    print("💾 Используем SQLite для локальной разработки")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
